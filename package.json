@@ -1,0 +1,14 @@
+{
+  "name": "kaito",
+  "version": "0.0.1",
+  "description": "a weird bundler that no body use",
+  "main": "index.js",
+  "author": "hikire",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/parser": "^7.2.3",
+    "@babel/preset-env": "^7.3.0",
+    "@babel/traverse": "^7.2.3"
+  }
+}

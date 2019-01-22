@@ -1,4 +1,4 @@
-var process = { env: { NODE_ENV: "production" } };
+var process = { env: { NODE_ENV: "development" } };
 (function(modules) {
   function require(id) {
     var [fn, mapping] = modules[id];

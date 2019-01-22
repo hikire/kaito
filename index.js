@@ -7,6 +7,8 @@ const { parse } = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
 const { transformFromAstAsync } = require("@babel/core");
 
+const BUNDLE_ENV = "development";
+
 function inspect(...vals) {
   console.log(
     ...vals.map(v =>
@@ -108,7 +110,7 @@ async function bundle(entry) {
     )
     .join(",");
   const result = `
-    var process = {env:{NODE_ENV : 'production'}};
+    var process = {env:{NODE_ENV : '${BUNDLE_ENV}'}};
     (function(modules){
       function require(id) {
         var [fn, mapping] = modules[id];

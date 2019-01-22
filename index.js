@@ -1,3 +1,4 @@
+const dotenv = require("dotenv");
 const fs = require("fs");
 const { promisify, inspect: rawInspect } = require("util");
 const readFile = promisify(fs.readFile);
@@ -99,6 +100,16 @@ async function createGraph(fileName) {
 
 async function bundle(entry) {
   id = 0;
+  const env = { NODE_ENV: BUNDLE_ENV };
+  try {
+    Object.assign(env, dotenv.parse(await readFile("./.env", "utf-8")));
+  } catch {}
+  try {
+    Object.assign(
+      env,
+      dotenv.parse(await readFile("./.env.development", "utf-8"))
+    );
+  } catch {}
   const graph = await createGraph(entry);
   const modules = graph
     .map(
@@ -110,7 +121,7 @@ async function bundle(entry) {
     )
     .join(",");
   const result = `
-    var process = {env:{NODE_ENV : '${BUNDLE_ENV}'}};
+    var process = {env:${JSON.stringify(env)}};
     (function(modules){
       function require(id) {
         var [fn, mapping] = modules[id];

@@ -10,6 +10,9 @@
     "@babel/parser": "^7.2.3",
     "@babel/plugin-transform-react-jsx": "^7.3.0",
     "@babel/preset-env": "^7.3.0",
-    "@babel/traverse": "^7.2.3"
+    "@babel/traverse": "^7.2.3",
+    "dotenv": "^6.2.0",
+    "react": "16.8.0-alpha.1",
+    "react-dom": "16.8.0-alpha.1"
   }
 }

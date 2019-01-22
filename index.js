@@ -33,7 +33,8 @@ async function createAsset(fileName) {
   });
 
   const { code: transformed } = await transformFromAstAsync(ast, content, {
-    presets: ["@babel/env"]
+    presets: ["@babel/env"],
+    plugins: ["@babel/plugin-transform-react-jsx"]
   });
 
   return {

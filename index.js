@@ -15,6 +15,16 @@ function inspect(...vals) {
   );
 }
 
+async function readJson(fileName) {
+  const content = await readFile(fileName, "utf-8");
+  return JSON.parse(content);
+}
+
+function ensureExt(fileName) {
+  if (!fileName.endsWith(".js")) return fileName + ".js";
+  return fileName;
+}
+
 let id = 0;
 
 async function createAsset(fileName) {
@@ -56,14 +66,25 @@ async function createAsset(fileName) {
 }
 
 async function createGraph(fileName) {
-  const dir = path.dirname(fileName);
   const asset = await createAsset(fileName);
   const assets = [asset];
 
   for (const asset of assets) {
+    const dir = path.dirname(asset.fileName);
     asset.mapping = {};
     for (const dep of asset.dependencies) {
-      const childAsset = await createAsset(path.join(dir, dep));
+      let depFile;
+      if (dep.startsWith("./") || dep.startsWith("../"))
+        depFile = path.join(dir, ensureExt(dep));
+      else {
+        const packageName = dep.split("/")[0];
+        console.log(dep, packageName);
+        const packagePath = `node_modules/${packageName}`;
+        const package = await readJson(path.join(packagePath, "package.json"));
+        const mainFile = package.main || "index.js";
+        depFile = path.join(packagePath, mainFile);
+      }
+      const childAsset = await createAsset(depFile);
       asset.mapping[dep] = childAsset.id;
       assets.push(childAsset);
     }
@@ -87,6 +108,7 @@ async function bundle(entry) {
     )
     .join(",");
   const result = `
+    var process = {env:{NODE_ENV : 'production'}};
     (function(modules){
       function require(id) {
         var [fn, mapping] = modules[id];

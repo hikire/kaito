@@ -15,13 +15,9 @@
     function(require, module, exports) {
       "use strict";
 
-      var _logger = _interopRequireDefault(require("./logger.js"));
+      var log = require("./logger.js").default;
 
-      function _interopRequireDefault(obj) {
-        return obj && obj.__esModule ? obj : { default: obj };
-      }
-
-      (0, _logger.default)();
+      log();
     },
     { "./logger.js": 1 }
   ],

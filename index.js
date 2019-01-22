@@ -29,6 +29,15 @@ async function createAsset(fileName) {
   traverse(ast, {
     ImportDeclaration({ node }) {
       dependencies.push(node.source.value);
+    },
+    CallExpression({ node }) {
+      const { callee, arguments } = node;
+      if (callee.name !== "require") return;
+      const [fileArgument] = arguments;
+      if (!fileArgument) throw new Error("No files were passed to require!");
+      if (fileArgument.type !== "StringLiteral")
+        throw new Error("Dynamic Require isn't currently supported");
+      dependencies.push(fileArgument.value);
     }
   });
 

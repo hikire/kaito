@@ -4,15 +4,15 @@
     function localRequire(localFileName) {
       return require(mapping[localFileName]);
     }
-    var exports = {};
-    fn(localRequire, exports);
-    return exports;
+    var module = { exports: {} };
+    fn(localRequire, module, module.exports);
+    return module.exports;
   }
 
   require(0);
 })({
   0: [
-    function(require, exports) {
+    function(require, module, exports) {
       "use strict";
 
       var _logger = _interopRequireDefault(require("./logger.js"));
@@ -26,7 +26,7 @@
     { "./logger.js": 1 }
   ],
   1: [
-    function(require, exports) {
+    function(require, module, exports) {
       "use strict";
 
       Object.defineProperty(exports, "__esModule", {
@@ -45,7 +45,7 @@
     { "./message.js": 2 }
   ],
   2: [
-    function(require, exports) {
+    function(require, module, exports) {
       "use strict";
 
       Object.defineProperty(exports, "__esModule", {

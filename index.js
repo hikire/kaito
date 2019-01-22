@@ -71,7 +71,7 @@ async function bundle(entry) {
   const modules = graph
     .map(
       a => `
-    ${a.id} : [function(require,exports){
+    ${a.id} : [function(require, module, exports){
       ${a.transformed}
     }, ${JSON.stringify(a.mapping)}]
   `
@@ -84,9 +84,9 @@ async function bundle(entry) {
         function localRequire(localFileName) {
           return require(mapping[localFileName]);
         }
-        var exports = {};
-        fn(localRequire, exports);
-        return exports;
+        var module = {exports:{}};
+        fn(localRequire, module, module.exports);
+        return module.exports;
       }
 
       require(0);

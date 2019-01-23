@@ -7,6 +7,7 @@ const path = require("path");
 const { parse } = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
 const { transformFromAstAsync } = require("@babel/core");
+const resolve = promisify(require("resolve"));
 
 const BUNDLE_ENV = "development";
 
@@ -16,16 +17,6 @@ function inspect(...vals) {
       rawInspect(v, { compact: false, depth: 5, breakLength: 80 })
     )
   );
-}
-
-async function resolvePath(dep, dir) {
-  if (dep.startsWith("./") || dep.startsWith("../"))
-    return path.join(dir, ensureExt(dep));
-  const packageName = dep.split("/")[0];
-  const packagePath = `node_modules/${packageName}`;
-  const package = await readJson(path.join(packagePath, "package.json"));
-  const mainFile = package.main || "index.js";
-  return path.join(packagePath, mainFile);
 }
 
 async function readJson(fileName) {
@@ -86,7 +77,7 @@ async function createGraph(fileName) {
     const dir = path.dirname(asset.fileName);
     asset.mapping = {};
     for (const dep of asset.dependencies) {
-      const depFile = await resolvePath(dep, dir);
+      const depFile = await resolve(dep, { basedir: dir });
       const childAsset = await createAsset(depFile);
       asset.mapping[dep] = childAsset.id;
       assets.push(childAsset);

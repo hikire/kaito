@@ -82,8 +82,6 @@ async function createGraph(fileName) {
     }
   }
 
-  inspect(assets);
-
   return assets;
 }
 

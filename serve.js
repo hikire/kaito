@@ -8,9 +8,13 @@ const PORT = !isNaN(parseInt(process.env.PORT))
 
 const server = micro(async () => {
   const result = await bundle("./example/index.js");
-  await writeFile("bundle.out.js", result);
+  writeFile("bundle.out.js", result);
   console.log("Done!");
-  return `<script>${result}</script>`;
+  return `
+  <body>
+    <script>${result}</script>
+  </body>
+  `;
 });
 
 server.listen(PORT, () => console.log(`listening on localhost:${PORT}`));

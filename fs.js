@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { promisify } = require("util");
 const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
 
 async function readJson(fileName) {
   const content = await readFile(fileName, "utf-8");
@@ -9,5 +10,6 @@ async function readJson(fileName) {
 
 module.exports = {
   readFile,
+  writeFile,
   readJson
 };

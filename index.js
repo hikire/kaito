@@ -1,9 +1,7 @@
 const { readFile } = require("./fs");
 const { inspect } = require("./utils");
 const dotenv = require("dotenv");
-const fs = require("fs");
 const { promisify } = require("util");
-const writeFile = promisify(fs.writeFile);
 const path = require("path");
 const { parse } = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
@@ -90,6 +88,7 @@ async function createGraph(fileName) {
 }
 
 async function bundle(entry) {
+  files.clear();
   id = 1;
   const env = { NODE_ENV: BUNDLE_ENV };
   try {
@@ -132,10 +131,6 @@ async function bundle(entry) {
   return result;
 }
 
-async function main() {
-  const result = await bundle("./example/index.js");
-  await writeFile("bundle.out.js", result);
-  console.log("Done!");
-}
-
-main().catch(console.error);
+module.exports = {
+  bundle
+};

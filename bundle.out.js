@@ -12,20 +12,22 @@ var __kaito__exports = {};
     return (modules[id][2] = module.exports);
   }
 
-  require(0);
+  require(1);
 })({
-  0: [
+  1: [
     function(require, module, exports) {
       "use strict";
 
       const log = require("./logger.js").default;
 
+      require("./extra");
+
       log();
     },
-    { "./logger.js": 1 },
+    { "./logger.js": 2, "./extra": 3 },
     __kaito__exports
   ],
-  1: [
+  2: [
     function(require, module, exports) {
       "use strict";
 
@@ -40,10 +42,19 @@ var __kaito__exports = {};
 
       exports.default = _default;
     },
-    { "./message.js": 2 },
+    { "./message.js": 4 },
     __kaito__exports
   ],
-  2: [
+  3: [
+    function(require, module, exports) {
+      "use strict";
+
+      console.log("extra");
+    },
+    {},
+    __kaito__exports
+  ],
+  4: [
     function(require, module, exports) {
       "use strict";
 
@@ -53,8 +64,10 @@ var __kaito__exports = {};
       exports.message = void 0;
       const message = "Yo :\\";
       exports.message = message;
+
+      require("./extra");
     },
-    {},
+    { "./extra": 3 },
     __kaito__exports
   ]
 });

@@ -29,9 +29,13 @@ function ensureExt(fileName) {
   return fileName;
 }
 
-let id = 0;
+// starts from 1 for easier conditions
+let id = 1;
 
-async function createAsset(fileName) {
+const files = new Map(); // path -> id
+
+async function createAsset(fileName, forceCreate = false) {
+  if (!forceCreate && files.has(fileName)) return { id: files.get(fileName) };
   const content = await readFile(fileName, "utf-8");
   const ast = parse(content, {
     sourceType: "module",
@@ -69,17 +73,20 @@ async function createAsset(fileName) {
     plugins: ["@babel/plugin-transform-react-jsx"]
   });
 
-  return {
-    id: id++,
+  const asset = {
+    id: files.get(fileName) || id++,
     fileName,
     content,
     dependencies,
     transformed
   };
+
+  files.set(fileName, asset.id);
+  return asset;
 }
 
 async function createGraph(fileName) {
-  const asset = await createAsset(fileName);
+  const asset = await createAsset(fileName, true);
   const assets = [asset];
 
   for (const asset of assets) {
@@ -89,7 +96,8 @@ async function createGraph(fileName) {
       const depFile = await resolve(dep, { basedir: dir });
       const childAsset = await createAsset(depFile);
       asset.mapping[dep] = childAsset.id;
-      assets.push(childAsset);
+      // only newly createdAssets get sent to HMR
+      if (childAsset.transformed) assets.push(childAsset);
     }
   }
 
@@ -99,7 +107,7 @@ async function createGraph(fileName) {
 }
 
 async function bundle(entry) {
-  id = 0;
+  id = 1;
   const env = { NODE_ENV: BUNDLE_ENV };
   try {
     Object.assign(env, dotenv.parse(await readFile("./.env", "utf-8")));
@@ -135,7 +143,7 @@ async function bundle(entry) {
         return modules[id][2] = module.exports;
       }
 
-      require(0);
+      require(1);
     })({${modules}})
   `;
   return result;

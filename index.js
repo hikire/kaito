@@ -1,7 +1,8 @@
+const { readFile } = require("./fs");
+const { inspect } = require("./utils");
 const dotenv = require("dotenv");
 const fs = require("fs");
-const { promisify, inspect: rawInspect } = require("util");
-const readFile = promisify(fs.readFile);
+const { promisify } = require("util");
 const writeFile = promisify(fs.writeFile);
 const path = require("path");
 const { parse } = require("@babel/parser");
@@ -10,24 +11,6 @@ const { transformFromAstAsync } = require("@babel/core");
 const resolve = promisify(require("resolve"));
 
 const BUNDLE_ENV = "development";
-
-function inspect(...vals) {
-  console.log(
-    ...vals.map(v =>
-      rawInspect(v, { compact: false, depth: 5, breakLength: 80 })
-    )
-  );
-}
-
-async function readJson(fileName) {
-  const content = await readFile(fileName, "utf-8");
-  return JSON.parse(content);
-}
-
-function ensureExt(fileName) {
-  if (!fileName.endsWith(".js")) return fileName + ".js";
-  return fileName;
-}
 
 // starts from 1 for easier conditions
 let id = 1;

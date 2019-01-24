@@ -1,13 +1,15 @@
 var process = { env: { NODE_ENV: "development" } };
+var __kaito__exports = {};
 (function(modules) {
   function require(id) {
-    var [fn, mapping] = modules[id];
+    var [fn, mapping, exports] = modules[id];
+    if (exports !== __kaito__exports) return exports;
     function localRequire(localFileName) {
       return require(mapping[localFileName]);
     }
     var module = { exports: {} };
     fn(localRequire, module, module.exports);
-    return module.exports;
+    return (modules[id][2] = module.exports);
   }
 
   require(0);
@@ -20,7 +22,8 @@ var process = { env: { NODE_ENV: "development" } };
 
       log();
     },
-    { "./logger.js": 1 }
+    { "./logger.js": 1 },
+    __kaito__exports
   ],
   1: [
     function(require, module, exports) {
@@ -37,7 +40,8 @@ var process = { env: { NODE_ENV: "development" } };
 
       exports.default = _default;
     },
-    { "./message.js": 2 }
+    { "./message.js": 2 },
+    __kaito__exports
   ],
   2: [
     function(require, module, exports) {
@@ -50,6 +54,7 @@ var process = { env: { NODE_ENV: "development" } };
       const message = "Yo :\\";
       exports.message = message;
     },
-    {}
+    {},
+    __kaito__exports
   ]
 });

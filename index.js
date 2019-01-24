@@ -116,21 +116,23 @@ async function bundle(entry) {
       a => `
     ${a.id} : [function(require, module, exports){
       ${a.transformed}
-    }, ${JSON.stringify(a.mapping)}]
+    }, ${JSON.stringify(a.mapping)}, __kaito__exports]
   `
     )
     .join(",");
   const result = `
     var process = {env:${JSON.stringify(env)}};
+    var __kaito__exports = {};
     (function(modules){
       function require(id) {
-        var [fn, mapping] = modules[id];
+        var [fn, mapping, exports] = modules[id];
+        if(exports !== __kaito__exports) return exports;
         function localRequire(localFileName) {
           return require(mapping[localFileName]);
         }
         var module = {exports:{}};
         fn(localRequire, module, module.exports);
-        return module.exports;
+        return modules[id][2] = module.exports;
       }
 
       require(0);

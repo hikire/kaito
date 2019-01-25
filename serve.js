@@ -42,8 +42,8 @@ const server = micro(async req => {
 const io = Socket(server);
 let throttleChange;
 watch("./example", { recursive: true }, (_event, fileName) => {
-  console.log("VHA:", fileName);
   if (throttleChange) return;
+  console.log("VHA:", fileName);
   throttleChange = setTimeout(() => {
     io.emit("change", fileName);
     throttleChange = null;

@@ -30,8 +30,6 @@ var __kaito__modules = {
 
       var _message = require("./message.js");
 
-      console.log("yoooo");
-
       var _default = () => console.log(_message.message);
 
       exports.default = _default;
@@ -43,7 +41,7 @@ var __kaito__modules = {
     function(require, module, exports) {
       "use strict";
 
-      console.log("extraa");
+      console.log("extra");
     },
     {},
     __kaito__exports
@@ -60,8 +58,6 @@ var __kaito__modules = {
       exports.message = message;
 
       require("./extra");
-
-      console.log("Really");
     },
     { "./extra": 3 },
     __kaito__exports

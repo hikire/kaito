@@ -1,28 +1,20 @@
 var process = { env: { NODE_ENV: "development" } };
 var __kaito__exports = {};
-(function(modules) {
-  function require(id) {
-    var [fn, mapping, exports] = modules[id];
-    if (exports !== __kaito__exports) return exports;
-    function localRequire(localFileName) {
-      return require(mapping[localFileName]);
-    }
-    var module = { exports: {} };
-    fn(localRequire, module, module.exports);
-    return (modules[id][2] = module.exports);
-  }
-
-  require(1);
-})({
+var __kaito__modules = {
   1: [
     function(require, module, exports) {
       "use strict";
 
+      // import React from "react";
+      // import ReactDOM from "react-dom";
       const log = require("./logger.js").default;
 
       require("./extra");
 
-      log();
+      log(); // const root = document.getElementById("app") || document.createElement("div");
+      // root.id = "app";
+      // document.body.appendChild(root);
+      // ReactDOM.render(<h1>Yo!!!!</h1>, root);
     },
     { "./logger.js": 2, "./extra": 3 },
     __kaito__exports
@@ -38,6 +30,8 @@ var __kaito__exports = {};
 
       var _message = require("./message.js");
 
+      console.log("yoooo");
+
       var _default = () => console.log(_message.message);
 
       exports.default = _default;
@@ -49,7 +43,7 @@ var __kaito__exports = {};
     function(require, module, exports) {
       "use strict";
 
-      console.log("extra");
+      console.log("extraa");
     },
     {},
     __kaito__exports
@@ -66,8 +60,23 @@ var __kaito__exports = {};
       exports.message = message;
 
       require("./extra");
+
+      console.log("Really");
     },
     { "./extra": 3 },
     __kaito__exports
   ]
-});
+};
+var __kaito__require = function require(id) {
+  var [fn, mapping, exports] = __kaito__modules[id];
+  if (exports !== __kaito__exports) return exports;
+  function localRequire(localFileName) {
+    console.log(id, mapping[localFileName]);
+    return require(mapping[localFileName]);
+  }
+  var module = { exports: {} };
+  //__kaito__modules[id][2] = module.exports;
+  fn(localRequire, module, module.exports);
+  return (__kaito__modules[id][2] = module.exports);
+};
+__kaito__require(1);

@@ -15,7 +15,8 @@ let id = 1;
 
 const files = new Map(); // path -> id
 
-async function createAsset(fileName, forceCreate = false) {
+async function createAsset(rawFileName, forceCreate = false) {
+  const fileName = path.normalize(rawFileName);
   if (!forceCreate && files.has(fileName)) return { id: files.get(fileName) };
   const content = await readFile(fileName, "utf-8");
   const ast = parse(content, {
@@ -67,7 +68,12 @@ async function createAsset(fileName, forceCreate = false) {
 }
 
 async function createGraph(fileName) {
-  const asset = await createAsset(fileName, true);
+  console.log(fileName, path.normalize(fileName));
+  const asset = await createAsset(
+    await resolve(fileName, { basedir: "./" }),
+    true
+  );
+  console.log(asset);
   const assets = [asset];
 
   for (const asset of assets) {
@@ -104,31 +110,68 @@ async function bundle(entry) {
       a => `
     ${a.id} : [function(require, module, exports){
       ${a.transformed}
-    }, ${JSON.stringify(a.mapping)}, __kaito__exports]
+    }, 
+    ${JSON.stringify(a.mapping)}, 
+    __kaito__exports
+  ]
   `
     )
     .join(",");
   const result = `
     var process = {env:${JSON.stringify(env)}};
     var __kaito__exports = {};
-    (function(modules){
-      function require(id) {
-        var [fn, mapping, exports] = modules[id];
+    var __kaito__modules = {${modules}};
+    var __kaito__require = function require(id) {
+        var [fn, mapping, exports] = __kaito__modules[id];
         if(exports !== __kaito__exports) return exports;
         function localRequire(localFileName) {
+          console.log(id, mapping[localFileName]);
           return require(mapping[localFileName]);
         }
         var module = {exports:{}};
+        //__kaito__modules[id][2] = module.exports;
         fn(localRequire, module, module.exports);
-        return modules[id][2] = module.exports;
+        return __kaito__modules[id][2]= module.exports;
       }
-
-      require(1);
-    })({${modules}})
+      __kaito__require(1);
   `;
   return result;
 }
 
+async function bundleAsset(fileName) {
+  const assets = await createGraph(fileName);
+  return `
+    ${assets
+      .map(
+        a => `
+    __kaito__modules[${a.id}] = [
+      function(require, module, exports){
+        ${a.transformed}
+      }, 
+      ${JSON.stringify(a.mapping)}, 
+      __kaito__exports
+    ];
+    `
+      )
+      .join("")}
+      function __kaito__moduleInvalidate(id, leaf) {
+        console.log("invalidate",id, leaf);
+        if(id === leaf) return true;
+        var current = __kaito__modules[id];
+        var isLeafParent = false;
+        Object.values(current[1]).forEach(function(child) {
+          isLeafParent = isLeafParent || __kaito__moduleInvalidate(child, leaf);
+        });
+        if(isLeafParent) current[2] = __kaito__exports;
+        return isLeafParent;
+      }
+      __kaito__moduleInvalidate(1, ${assets[0].id});
+      console.log("HMR!");
+      __kaito__require(1);
+  `;
+}
+
 module.exports = {
-  bundle
+  bundle,
+  bundleAsset
 };

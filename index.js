@@ -5,6 +5,7 @@ const { promisify } = require("util");
 const path = require("path");
 const { parse } = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
+const types = require("@babel/types");
 const { transformFromAstAsync } = require("@babel/core");
 const resolve = promisify(require("resolve"));
 
@@ -15,7 +16,7 @@ let id = 1;
 
 const files = new Map(); // path -> id
 
-async function createAsset(rawFileName, forceCreate = false) {
+async function createAsset(rawFileName, forceCreate = false, env) {
   const fileName = path.normalize(rawFileName);
   if (!forceCreate && files.has(fileName)) return { id: files.get(fileName) };
   const content = await readFile(fileName, "utf-8");
@@ -25,6 +26,34 @@ async function createAsset(rawFileName, forceCreate = false) {
   });
 
   const dependencies = [];
+  const t = types;
+  traverse(ast, {
+    MemberExpression(path) {
+      if (
+        t.isMemberExpression(path.node.object) &&
+        path.node.object.property.name === "env"
+      ) {
+        if (
+          t.isIdentifier(path.node.object.object) &&
+          path.node.object.object.name === "process"
+        )
+          path.replaceWithSourceString(
+            JSON.stringify(env[path.node.property.name])
+          );
+      }
+    }
+  });
+
+  traverse(ast, {
+    Conditional(path) {
+      const test = path.get("test");
+      const evaluate = test.evaluate();
+      if (!evaluate.confident) return;
+      const next = evaluate.value ? "consequent" : "alternate";
+      if (!path.node[next]) return path.remove();
+      path.replaceWith(path.node[next]);
+    }
+  });
 
   traverse(ast, {
     ImportDeclaration({ node }) {
@@ -67,13 +96,14 @@ async function createAsset(rawFileName, forceCreate = false) {
   return asset;
 }
 
-async function createGraph(fileName) {
-  console.log(fileName, path.normalize(fileName));
+async function createGraph(fileName, env) {
+  //console.log(fileName, path.normalize(fileName));
   const asset = await createAsset(
     await resolve(fileName, { basedir: "./" }),
-    true
+    true,
+    env
   );
-  console.log(asset);
+  //console.log(asset);
   const assets = [asset];
 
   for (const asset of assets) {
@@ -81,7 +111,7 @@ async function createGraph(fileName) {
     asset.mapping = {};
     for (const dep of asset.dependencies) {
       const depFile = await resolve(dep, { basedir: dir });
-      const childAsset = await createAsset(depFile);
+      const childAsset = await createAsset(depFile, false, env);
       asset.mapping[dep] = childAsset.id;
       // only newly createdAssets get sent to HMR
       if (childAsset.transformed) assets.push(childAsset);
@@ -91,10 +121,12 @@ async function createGraph(fileName) {
   return assets;
 }
 
+let env = {};
+
 async function bundle(entry) {
   files.clear();
   id = 1;
-  const env = { NODE_ENV: BUNDLE_ENV };
+  env = { NODE_ENV: BUNDLE_ENV };
   try {
     Object.assign(env, dotenv.parse(await readFile("./.env", "utf-8")));
   } catch {}
@@ -104,7 +136,7 @@ async function bundle(entry) {
       dotenv.parse(await readFile("./.env.development", "utf-8"))
     );
   } catch {}
-  const graph = await createGraph(entry);
+  const graph = await createGraph(entry, env);
   const modules = graph
     .map(
       a => `
@@ -139,7 +171,7 @@ async function bundle(entry) {
 }
 
 async function bundleAsset(fileName) {
-  const assets = await createGraph(fileName);
+  const assets = await createGraph(fileName, env);
   return `
     ${assets
       .map(

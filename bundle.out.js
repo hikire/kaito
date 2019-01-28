@@ -1,6 +1,6 @@
 var process = { env: { NODE_ENV: "development" } };
 var __kaito__exports = {};
-var __kuaito__modules = {
+var __kaito__modules = {
   1: [
     function(require, module, exports) {
       "use strict";

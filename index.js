@@ -37,8 +37,10 @@ async function createAsset(rawFileName, forceCreate = false, env) {
           t.isIdentifier(path.node.object.object) &&
           path.node.object.object.name === "process"
         )
-          path.replaceWithSourceString(
-            JSON.stringify(env[path.node.property.name])
+          path.replaceWith(
+            typeof env[path.node.property.name] === "string"
+              ? t.stringLiteral(env[path.node.property.name])
+              : t.identifier("undefined")
           );
       }
     }

@@ -8,7 +8,7 @@
 // document.body.appendChild(root);
 // ReactDOM.render(<h1>Yo!!!!</h1>, root);
 if (process.env.NODE_ENV !== "production") {
-  console.log("not production");
+  console.log("not production", process.env["NODE_ENV"]);
 } else {
   console.log("production");
 }

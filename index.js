@@ -37,11 +37,12 @@ async function createAsset(rawFileName, forceCreate = false, env) {
           t.isIdentifier(path.node.object.object) &&
           path.node.object.object.name === "process"
         )
-          path.replaceWith(
-            typeof env[path.node.property.name] === "string"
-              ? t.stringLiteral(env[path.node.property.name])
-              : t.identifier("undefined")
-          );
+          if (t.isIdentifier(path.node.property))
+            path.replaceWith(
+              typeof env[path.node.property.name] === "string"
+                ? t.stringLiteral(env[path.node.property.name])
+                : t.identifier("undefined")
+            );
       }
     }
   });
